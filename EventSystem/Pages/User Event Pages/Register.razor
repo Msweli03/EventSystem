@@ -1,0 +1,168 @@
+﻿@page "/register/{EventId:int}"
+@using EventSystem.Data
+@using EventSystem.Models
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Authorization
+@inject ApplicationDbContext DbContext
+@inject NavigationManager Navigation
+@inject UserManager<IdentityUser> UserManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>Register for Event</h3>
+
+@if (Event != null)
+{
+    <div>
+        <h4>@Event.Name</h4>
+        <p>Date: @Event.Date.ToShortDateString()</p>
+        <p>Seats Available: @Event.SeatsAvailable</p>
+
+        @if (isRegistered)
+        {
+            <p>You are already registered for this event.</p>
+            <button class="btn btn-danger" @onclick="CancelRegistration">Cancel Registration</button>
+        }
+        else if (Event.SeatsAvailable > 0)
+        {
+            <button class="btn btn-success" @onclick="RegisterForEvent">Book Seat</button>
+        }
+        else
+        {
+            <p>No seats available.</p>
+        }
+    </div>
+}
+else
+{
+    <p>Loading event details...</p>
+}
+
+@code {
+    [Parameter] public int EventId { get; set; }
+    private Event Event { get; set; }
+    private bool isRegistered;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEventData();
+    }
+
+    private async Task LoadEventData()
+    {
+        try
+        {
+            Event = await DbContext.Events.Include(e => e.Registrations)
+                                         .FirstOrDefaultAsync(e => e.Id == EventId);
+
+            if (Event == null)
+            {
+                Console.WriteLine("Error: Event not found.");
+                return;
+            }
+
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userId = UserManager.GetUserId(user);
+
+            if (userId != null)
+            {
+                isRegistered = await DbContext.Registrations.AnyAsync(r => r.EventId == EventId && r.UserId == userId);
+            }
+            else
+            {
+                Console.WriteLine("Error: User not authenticated.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error initializing event details: {ex.Message}");
+        }
+    }
+
+    private async Task RegisterForEvent()
+    {
+        try
+        {
+            if (Event == null)
+            {
+                Console.WriteLine("Error: Event is null.");
+                return;
+            }
+
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userId = UserManager.GetUserId(user);
+
+            if (Event.SeatsAvailable > 0 && !isRegistered && userId != null)
+            {
+                var registration = new Registration
+                    {
+                        EventId = EventId,
+                        UserId = userId,
+                        ReferenceNumber = Guid.NewGuid().ToString()
+                    };
+
+                Event.SeatsAvailable--;
+                DbContext.Registrations.Add(registration);
+                DbContext.Events.Update(Event);
+                await DbContext.SaveChangesAsync();
+
+                isRegistered = true;
+                Console.WriteLine("Successfully registered for the event.");
+
+                // Reload the page to update the UI
+                await LoadEventData();
+            }
+            else
+            {
+                Console.WriteLine("Error: Seats unavailable or user not authenticated.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error registering for event: {ex.Message}");
+        }
+    }
+
+    private async Task CancelRegistration()
+    {
+        try
+        {
+            if (Event == null)
+            {
+                Console.WriteLine("Error: Event is null.");
+                return;
+            }
+
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userId = UserManager.GetUserId(user);
+
+            var registration = await DbContext.Registrations
+                .FirstOrDefaultAsync(r => r.EventId == EventId && r.UserId == userId);
+
+            if (registration != null)
+            {
+                Event.SeatsAvailable++;
+                DbContext.Registrations.Remove(registration);
+                DbContext.Events.Update(Event);
+                await DbContext.SaveChangesAsync();
+
+                isRegistered = false;
+                Console.WriteLine("Registration cancelled successfully.");
+
+                // Reload the page to update the UI
+                await LoadEventData();
+            }
+            else
+            {
+                Console.WriteLine("Error: Registration not found.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error cancelling registration: {ex.Message}");
+        }
+    }
+}

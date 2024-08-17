@@ -1,0 +1,50 @@
+﻿@page "/create-event"
+@using EventSystem.Data
+@using EventSystem.Models
+@using Microsoft.EntityFrameworkCore
+@inject ApplicationDbContext DbContext
+@inject NavigationManager Navigation
+
+<h3>Create New Event</h3>
+
+<EditForm Model="newEvent" OnValidSubmit="AddEvent">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="name">Name:</label>
+        <InputText id="name" class="form-control" @bind-Value="newEvent.Name" />
+    </div>
+
+    <div class="form-group">
+        <label for="date">Date:</label>
+        <InputDate id="date" class="form-control" @bind-Value="newEvent.Date" />
+    </div>
+
+    <div class="form-group">
+        <label for="seatsAvailable">Seats Available:</label>
+        <InputNumber id="seatsAvailable" class="form-control" @bind-Value="newEvent.SeatsAvailable" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create Event</button>
+    <button type="button" class="btn btn-secondary" @onclick="CancelCreate">Cancel</button>
+</EditForm>
+
+@code {
+    private Event newEvent = new Event();
+
+    private async Task AddEvent()
+    {
+        if (newEvent != null)
+        {
+            DbContext.Events.Add(newEvent);
+            await DbContext.SaveChangesAsync();
+            Navigation.NavigateTo("/manage-events");
+        }
+    }
+
+    private void CancelCreate()
+    {
+        Navigation.NavigateTo("/manage-events");
+    }
+}

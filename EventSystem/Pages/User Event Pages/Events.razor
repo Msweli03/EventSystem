@@ -1,0 +1,85 @@
+﻿@page "/events"
+@using EventSystem.Data
+@using EventSystem.Models
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@inject ApplicationDbContext DbContext
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject UserManager<IdentityUser> UserManager
+
+<h3>Available Events</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Seats Available</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ev in events)
+        {
+            <tr>
+                <td>@ev.Name</td>
+                <td>@ev.Date.ToShortDateString()</td>
+                <td>@ev.SeatsAvailable</td>
+                <td>
+                    @if (ev.SeatsAvailable > 0)
+                    {
+                        @if (isRegistered.ContainsKey(ev.Id) && isRegistered[ev.Id])
+                        {
+                            <button class="btn btn-danger" @onclick="() => CancelRegistration(ev.Id)">Cancel Registration</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-success" @onclick="() => RegisterForEvent(ev.Id)">Register</button>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-danger">No seats available</p>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a class="btn btn-primary" href="/edit-event">Create New Event</a>
+
+@code {
+    private List<Event> events;
+    private Dictionary<int, bool> isRegistered = new Dictionary<int, bool>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = await DbContext.Events.ToListAsync();
+
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userId = UserManager.GetUserId(user);
+
+        if (userId != null)
+        {
+            foreach (var ev in events)
+            {
+                isRegistered[ev.Id] = await DbContext.Registrations.AnyAsync(r => r.EventId == ev.Id && r.UserId == userId);
+            }
+        }
+    }
+
+    private void RegisterForEvent(int eventId)
+    {
+        Navigation.NavigateTo($"/register/{eventId}");
+    }
+
+    private async Task CancelRegistration(int eventId)
+    {
+        // Redirect to the registration page with cancellation functionality
+        Navigation.NavigateTo($"/register/{eventId}");
+    }
+}

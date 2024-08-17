@@ -1,0 +1,76 @@
+﻿@page "/manage-events"
+@using EventSystem.Data
+@using EventSystem.Models
+@using Microsoft.EntityFrameworkCore;
+@inject ApplicationDbContext DbContext
+@inject NavigationManager Navigation
+
+<h3>Manage Events</h3>
+
+<button class="btn btn-primary" @onclick="CreateNewEvent">Create New Event</button>
+
+@if (events == null)
+{
+    <p>Loading events...</p>
+}
+else if (!events.Any())
+{
+    <p>No events found.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Seats Available</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ev in events)
+            {
+                <tr>
+                    <td>@ev.Name</td>
+                    <td>@ev.Date.ToShortDateString()</td>
+                    <td>@ev.SeatsAvailable</td>
+                    <td>
+                        <button class="btn btn-info" @onclick="() => EditEvent(ev.Id)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteEvent(ev.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Event> events;
+
+    protected override async Task OnInitializedAsync()
+    {
+        events = await DbContext.Events.ToListAsync();
+    }
+
+    private void CreateNewEvent()
+    {
+        Navigation.NavigateTo("/addevent");
+    }
+
+    private void EditEvent(int eventId)
+    {
+        Navigation.NavigateTo($"/change-event/{eventId}");
+    }
+
+    private async Task DeleteEvent(int eventId)
+    {
+        var eventToDelete = await DbContext.Events.FindAsync(eventId);
+        if (eventToDelete != null)
+        {
+            DbContext.Events.Remove(eventToDelete);
+            await DbContext.SaveChangesAsync();
+            events = await DbContext.Events.ToListAsync();
+        }
+    }
+}
