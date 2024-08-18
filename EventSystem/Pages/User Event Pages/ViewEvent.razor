@@ -3,20 +3,89 @@
 @using EventSystem.Models
 @inject ApplicationDbContext DbContext
 
-<h3>Event Details</h3>
+<style>
+    .container {
+        display: flex;
+        justify-content: flex-start; /* Align the container to the left */
+        align-items: center; /* Center vertically */
+        min-height: 80vh; /* Take up at least 80% of the viewport height */
+        padding: 1rem; /* Padding around the container */
+    }
 
-@if (eventDetails == null)
-{
-    <p>Loading event details...</p>
-}
-else
-{
-    <div>
-        <h4>@eventDetails.Name</h4>
-        <p>Date: @eventDetails.Date.ToShortDateString()</p>
-        <p>Seats Available: @eventDetails.SeatsAvailable</p>
+    .event-details-container {
+        border: 1px solid #5bc0de; /* Light blue border */
+        padding: 1.25rem; /* Increased padding for better spacing */
+        border-radius: 0.5rem; /* Slightly more rounded corners */
+        background-color: #ffffff; /* White background for contrast */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Light shadow for depth */
+        max-width: 600px; /* Set a maximum width to keep it compact */
+        width: 100%; /* Full width within the max-width limit */
+    }
+
+    h3 {
+        color: #5bc0de; /* Light blue color */
+        text-align: center; /* Center the heading text */
+        margin-bottom: 1.5rem; /* Space below the heading */
+    }
+
+    .event-details {
+        margin-bottom: 1rem; /* Space below each section */
+    }
+
+    dl {
+        margin: 0; /* Remove default margin */
+        padding: 0; /* Remove default padding */
+    }
+
+    dt {
+        font-weight: bold; /* Bold labels */
+        color: #333; /* Darker color for labels */
+        margin-bottom: 0.5rem; /* Space below each label */
+    }
+
+    dd {
+        margin-bottom: 1rem; /* Space below each value */
+        color: #666; /* Slightly darker grey for text */
+    }
+
+    .back-link {
+        display: block;
+        text-align: center; /* Center the link */
+        margin-top: 1rem; /* Space above the link */
+        font-size: 1rem; /* Standard font size for readability */
+        color: #5bc0de; /* Light blue color for the link */
+        text-decoration: none; /* Remove underline from the link */
+    }
+</style>
+
+<div class="container">
+    <div class="event-details-container">
+        <h3>Event Details</h3>
+
+        @if (eventDetails == null)
+        {
+            <p>Loading event details...</p>
+        }
+        else
+        {
+            <dl class="event-details">
+                <dt>Name:</dt>
+                <dd>@eventDetails.Name</dd>
+
+                <dt>Date:</dt>
+                <dd>@eventDetails.Date.ToShortDateString()</dd>
+
+                <dt>Total Seats:</dt>
+                <dd>@eventDetails.TotalSeats</dd>
+
+                <dt>Seats Available:</dt>
+                <dd>@eventDetails.SeatsAvailable</dd>
+            </dl>
+        }
+
+        <a class="back-link" href="/">Back to List</a>
     </div>
-}
+</div>
 
 @code {
     [Parameter]

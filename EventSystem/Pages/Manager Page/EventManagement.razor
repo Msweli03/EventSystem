@@ -6,53 +6,181 @@
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
-<h3>Manage Events</h3>
+@* Updated to include pagination *@
+<style>
+    .btn-custom {
+        background-color: #5bc0de; /* Light blue color */
+        border-color: #46b8da; /* Slightly darker shade of blue */
+    }
 
-<button class="btn btn-primary" @onclick="CreateNewEvent">Create New Event</button>
+        .btn-custom:hover {
+            background-color: #31b0d5; /* Even lighter blue on hover */
+            border-color: #269abc; /* Slightly darker shade of blue on hover */
+        }
 
-@if (events == null)
-{
-    <p>Loading events...</p>
-}
-else if (!events.Any())
-{
-    <p>No events found.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Seats Available</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var ev in events)
-            {
-                <tr>
-                    <td>@ev.Name</td>
-                    <td>@ev.Date.ToShortDateString()</td>
-                    <td>@ev.SeatsAvailable</td>
-                    <td>
-                        <button class="btn btn-info" @onclick="() => EditEvent(ev.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => ConfirmDelete(ev.Id, ev.Name)">Delete</button>
-                        <button class="btn btn-secondary" @onclick="() => ViewEvent(ev.Id)">View</button>
-                    </td>
-                </tr>
+    .btn-edit {
+        background-color: #5bc0de; /* Light blue color */
+        border-color: #46b8da;
+    }
+
+        .btn-edit:hover {
+            background-color: #31b0d5; /* Slightly lighter blue on hover */
+            border-color: #269abc;
+        }
+
+    .btn-delete {
+        background-color: #5bc0de; /* Light blue color */
+        border-color: #46b8da;
+    }
+
+        .btn-delete:hover {
+            background-color: #31b0d5; /* Slightly lighter blue on hover */
+            border-color: #269abc;
+        }
+
+    .btn-view {
+        background-color: #5bc0de; /* Light blue color */
+        border-color: #46b8da;
+    }
+
+        .btn-view:hover {
+            background-color: #31b0d5; /* Slightly lighter blue on hover */
+            border-color: #269abc;
+        }
+
+    .table-custom thead {
+        background-color: #5bc0de; /* Light blue color */
+        color: white;
+    }
+
+    .table-custom tbody tr:hover {
+        background-color: #f0f8ff; /* Very light blue for row hover */
+    }
+
+    .card-custom {
+        border-color: #5bc0de; /* Light blue color */
+    }
+
+    .card-header-custom {
+        background-color: #5bc0de; /* Light blue color */
+        color: white;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+        .pagination .page-item {
+            margin: 0 0.25rem;
+        }
+
+        .pagination .page-link {
+            color: #5bc0de;
+            border: 1px solid #46b8da;
+        }
+
+            .pagination .page-link:hover {
+                background-color: #31b0d5;
+                border-color: #269abc;
             }
-        </tbody>
-    </table>
-}
+</style>
+
+<div class="container mt-4">
+    <div class="card card-custom">
+        <div class="card-header card-header-custom">
+            <h3 class="card-title">Manage Events</h3>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-custom mb-3" @onclick="CreateNewEvent">Add Event</button>
+
+            @if (events == null)
+            {
+                <p>Loading events...</p>
+            }
+            else if (!events.Any())
+            {
+                <p>No events found.</p>
+            }
+            else
+            {
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Date</th>
+                            <th>Total Seats</th>
+                            <th>Seats Available</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ev in pagedEvents)
+                        {
+                            <tr>
+                                <td>@ev.Name</td>
+                                <td>@ev.Date.ToShortDateString()</td>
+                                <td>@ev.TotalSeats</td>
+                                <td>@ev.SeatsAvailable</td>
+                                <td>
+                                    <button class="btn btn-edit btn-sm" @onclick="() => EditEvent(ev.Id)">Edit</button>
+                                    <button class="btn btn-delete btn-sm" @onclick="() => ConfirmDelete(ev.Id, ev.Name)">Delete</button>
+                                    <button class="btn btn-view btn-sm" @onclick="() => ViewEvent(ev.Id)">View</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <div class="pagination">
+                    <ul class="pagination">
+                        <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                            <a class="page-link" href="#" @onclick="() => ChangePage(currentPage - 1)">Previous</a>
+                        </li>
+                        @for (var i = 1; i <= totalPages; i++)
+                        {
+                            <li class="page-item @(currentPage == i ? "active" : "")">
+                                <a class="page-link" href="#" @onclick="() => ChangePage(i)">@i</a>
+                            </li>
+                        }
+                        <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                            <a class="page-link" href="#" @onclick="() => ChangePage(currentPage + 1)">Next</a>
+                        </li>
+                    </ul>
+                </div>
+            }
+        </div>
+    </div>
+</div>
 
 @code {
     private List<Event> events;
+    private List<Event> pagedEvents;
+    private int currentPage = 1;
+    private const int pageSize = 10;
+    private int totalPages;
 
     protected override async Task OnInitializedAsync()
     {
         events = await DbContext.Events.ToListAsync();
+        UpdatePagedEvents();
+    }
+
+    private void UpdatePagedEvents()
+    {
+        totalPages = (int)Math.Ceiling(events.Count / (double)pageSize);
+        pagedEvents = events
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+    }
+
+    private void ChangePage(int newPage)
+    {
+        if (newPage < 1 || newPage > totalPages) return;
+        currentPage = newPage;
+        UpdatePagedEvents();
     }
 
     private void CreateNewEvent()
@@ -62,7 +190,7 @@ else
 
     private void EditEvent(int eventId)
     {
-        Navigation.NavigateTo($"/change-event/{eventId}");
+        Navigation.NavigateTo($"/edit-event/{eventId}");
     }
 
     private void ViewEvent(int eventId)
@@ -72,10 +200,8 @@ else
 
     private async Task ConfirmDelete(int eventId, string eventName)
     {
-        // Show the confirmation dialog with the event name
         var confirmed = await JS.InvokeAsync<bool>("confirmDelete", eventName);
 
-        // If the user confirms, proceed with the deletion
         if (confirmed)
         {
             await DeleteEvent(eventId);
@@ -90,6 +216,7 @@ else
             DbContext.Events.Remove(eventToDelete);
             await DbContext.SaveChangesAsync();
             events = await DbContext.Events.ToListAsync();
+            UpdatePagedEvents();
         }
     }
 }

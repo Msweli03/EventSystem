@@ -9,6 +9,40 @@
 @inject UserManager<IdentityUser> UserManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
+<style>
+    .btn-success {
+        background-color: #5bc0de; /* Light blue color */
+        border-color: #46b8da; /* Slightly darker shade of blue */
+    }
+
+        .btn-success:hover {
+            background-color: #31b0d5; /* Lighter blue on hover */
+            border-color: #269abc; /* Slightly darker shade of blue on hover */
+        }
+
+    .btn-danger {
+        background-color: #d9534f; /* Red color */
+        border-color: #d43f3a; /* Slightly darker red */
+    }
+
+        .btn-danger:hover {
+            background-color: #c9302c; /* Darker red on hover */
+            border-color: #ac2925; /* Slightly darker red on hover */
+        }
+
+    .card {
+        border-color: #5bc0de; /* Light blue color */
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    h3 {
+        color: #5bc0de; /* Light blue color */
+    }
+</style>
+
 <h3>Register for Event</h3>
 
 @if (Event != null)

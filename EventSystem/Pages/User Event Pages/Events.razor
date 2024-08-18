@@ -9,6 +9,48 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<IdentityUser> UserManager
 
+<style>
+    .btn-register {
+        background-color: #5bc0de; /* Light blue color */
+        border-color: #46b8da; /* Slightly darker shade of blue */
+    }
+
+        .btn-register:hover {
+            background-color: #31b0d5; /* Even lighter blue on hover */
+            border-color: #269abc; /* Slightly darker shade of blue on hover */
+        }
+
+    .btn-cancel {
+        background-color: #d9534f; /* Red color */
+        border-color: #d43f3a; /* Slightly darker shade of red */
+    }
+
+        .btn-cancel:hover {
+            background-color: #c9302c; /* Darker red on hover */
+            border-color: #ac2925; /* Even darker shade of red on hover */
+        }
+
+    .card-body-custom {
+        border-color: #5bc0de; /* Light blue color */
+    }
+
+    .card-title {
+        color: #5bc0de; /* Light blue color */
+    }
+
+    .text-warning {
+        color: #f0ad4e; /* Warning color for no seats available */
+    }
+
+    .text-muted {
+        color: #6c757d; /* Muted color for already occurred events */
+    }
+
+    .container {
+        margin-top: 1rem;
+    }
+</style>
+
 <h3 class="mb-4">Upcoming Events</h3>
 
 <div class="container mb-4">
@@ -22,7 +64,7 @@
         @foreach (var ev in filteredEvents)
         {
             <div class="col-md-4 mb-4">
-                <div class="card">
+                <div class="card card-body-custom">
                     <div class="card-body">
                         <h5 class="card-title">@ev.Name</h5>
                         <h6 class="card-subtitle mb-2 text-muted">@ev.Date.ToShortDateString()</h6>
@@ -34,11 +76,11 @@
                                 {
                                     @if (isRegistered.ContainsKey(ev.Id) && isRegistered[ev.Id])
                                     {
-                                        <button class="btn btn-danger" @onclick="() => CancelRegistration(ev.Id)">Cancel Registration</button>
+                                        <button class="btn btn-cancel" @onclick="() => CancelRegistration(ev.Id)">Cancel Registration</button>
                                     }
                                     else
                                     {
-                                        <button class="btn btn-success" @onclick="() => RegisterForEvent(ev.Id)">Register</button>
+                                        <button class="btn btn-register" @onclick="() => RegisterForEvent(ev.Id)">Register</button>
                                     }
                                 }
                                 else
@@ -58,9 +100,9 @@
     </div>
 </div>
 
-<div class="container mt-4">
-    <a class="btn btn-primary" href="/edit-event">Create New Event</a>
-</div>
+@* <div class="container mt-4">
+    <a class="btn btn-custom" href="/edit-event">Create New Event</a>
+</div> *@
 
 @code {
     private List<Event> events;
