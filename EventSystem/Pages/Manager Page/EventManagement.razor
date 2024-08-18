@@ -1,9 +1,10 @@
 ﻿@page "/manage-events"
 @using EventSystem.Data
 @using EventSystem.Models
-@using Microsoft.EntityFrameworkCore;
+@using Microsoft.EntityFrameworkCore
 @inject ApplicationDbContext DbContext
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <h3>Manage Events</h3>
 
@@ -37,7 +38,8 @@ else
                     <td>@ev.SeatsAvailable</td>
                     <td>
                         <button class="btn btn-info" @onclick="() => EditEvent(ev.Id)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteEvent(ev.Id)">Delete</button>
+                        <button class="btn btn-danger" @onclick="() => ConfirmDelete(ev.Id, ev.Name)">Delete</button>
+                        <button class="btn btn-secondary" @onclick="() => ViewEvent(ev.Id)">View</button>
                     </td>
                 </tr>
             }
@@ -55,12 +57,29 @@ else
 
     private void CreateNewEvent()
     {
-        Navigation.NavigateTo("/addevent");
+        Navigation.NavigateTo("/edit-event");
     }
 
     private void EditEvent(int eventId)
     {
         Navigation.NavigateTo($"/change-event/{eventId}");
+    }
+
+    private void ViewEvent(int eventId)
+    {
+        Navigation.NavigateTo($"/view-event/{eventId}");
+    }
+
+    private async Task ConfirmDelete(int eventId, string eventName)
+    {
+        // Show the confirmation dialog with the event name
+        var confirmed = await JS.InvokeAsync<bool>("confirmDelete", eventName);
+
+        // If the user confirms, proceed with the deletion
+        if (confirmed)
+        {
+            await DeleteEvent(eventId);
+        }
     }
 
     private async Task DeleteEvent(int eventId)

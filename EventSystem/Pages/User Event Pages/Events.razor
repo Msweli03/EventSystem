@@ -9,55 +9,70 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject UserManager<IdentityUser> UserManager
 
-<h3>Available Events</h3>
+<h3 class="mb-4">Upcoming Events</h3>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Date</th>
-            <th>Seats Available</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var ev in events)
+<div class="container mb-4">
+    <div class="form-group">
+        <input type="text" class="form-control" style="max-width: 300px;" placeholder="Search events..." @bind="searchQuery" @oninput="OnSearch" />
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        @foreach (var ev in filteredEvents)
         {
-            <tr>
-                <td>@ev.Name</td>
-                <td>@ev.Date.ToShortDateString()</td>
-                <td>@ev.SeatsAvailable</td>
-                <td>
-                    @if (ev.SeatsAvailable > 0)
-                    {
-                        @if (isRegistered.ContainsKey(ev.Id) && isRegistered[ev.Id])
-                        {
-                            <button class="btn btn-danger" @onclick="() => CancelRegistration(ev.Id)">Cancel Registration</button>
-                        }
-                        else
-                        {
-                            <button class="btn btn-success" @onclick="() => RegisterForEvent(ev.Id)">Register</button>
-                        }
-                    }
-                    else
-                    {
-                        <p class="text-danger">No seats available</p>
-                    }
-                </td>
-            </tr>
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@ev.Name</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">@ev.Date.ToShortDateString()</h6>
+                        <p class="card-text">Seats Available: @ev.SeatsAvailable</p>
+                        <div class="d-flex justify-content-between">
+                            @if (ev.Date > DateTime.Now) // Check if the event is in the future
+                            {
+                                if (ev.SeatsAvailable > 0)
+                                {
+                                    @if (isRegistered.ContainsKey(ev.Id) && isRegistered[ev.Id])
+                                    {
+                                        <button class="btn btn-danger" @onclick="() => CancelRegistration(ev.Id)">Cancel Registration</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-success" @onclick="() => RegisterForEvent(ev.Id)">Register</button>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-warning">No seats available</span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">This event has already occurred</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
         }
-    </tbody>
-</table>
+    </div>
+</div>
 
-<a class="btn btn-primary" href="/edit-event">Create New Event</a>
+<div class="container mt-4">
+    <a class="btn btn-primary" href="/edit-event">Create New Event</a>
+</div>
 
 @code {
     private List<Event> events;
+    private List<Event> filteredEvents;
     private Dictionary<int, bool> isRegistered = new Dictionary<int, bool>();
+    private string searchQuery = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
+        // Fetch all events
         events = await DbContext.Events.ToListAsync();
+        filteredEvents = events; // Initialize filteredEvents
 
         var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
@@ -70,6 +85,19 @@
                 isRegistered[ev.Id] = await DbContext.Registrations.AnyAsync(r => r.EventId == ev.Id && r.UserId == userId);
             }
         }
+    }
+
+    private void OnSearch(ChangeEventArgs e)
+    {
+        searchQuery = e.Value?.ToString() ?? string.Empty;
+        FilterEvents();
+    }
+
+    private void FilterEvents()
+    {
+        filteredEvents = events
+            .Where(ev => ev.Name.IndexOf(searchQuery, StringComparison.OrdinalIgnoreCase) >= 0)
+            .ToList();
     }
 
     private void RegisterForEvent(int eventId)
