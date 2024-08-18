@@ -41,6 +41,11 @@
     h3 {
         color: #5bc0de; /* Light blue color */
     }
+
+    /* Custom styling for input field */
+    .small-input {
+        width: 250px; /* Adjust the width as needed */
+    }
 </style>
 
 <h3>Register for Event</h3>
@@ -49,6 +54,7 @@
 {
     <div>
         <h4>@Event.Name</h4>
+        <p>@Event.Description</p> <!-- Added event description here -->
         <p>Date: @Event.Date.ToShortDateString()</p>
         <p>Seats Available: @Event.SeatsAvailable</p>
 
@@ -59,7 +65,13 @@
         }
         else if (Event.SeatsAvailable > 0)
         {
-            <button class="btn btn-success" @onclick="RegisterForEvent">Book Seat</button>
+            <EditForm Model="this">
+                <div class="form-group">
+                    <label for="emailAddress">Email Address</label>
+                    <InputText id="emailAddress" @bind-Value="EmailAddress" class="form-control small-input" />
+                </div>
+                <button type="submit" class="btn btn-success" @onclick="RegisterForEvent">Book Seat</button>
+            </EditForm>
         }
         else
         {
@@ -76,6 +88,7 @@ else
     [Parameter] public int EventId { get; set; }
     private Event Event { get; set; }
     private bool isRegistered;
+    private string EmailAddress { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -134,7 +147,8 @@ else
                     {
                         EventId = EventId,
                         UserId = userId,
-                        ReferenceNumber = Guid.NewGuid().ToString()
+                        ReferenceNumber = Guid.NewGuid().ToString(),
+                        EmailAddress = EmailAddress // Set the email address here
                     };
 
                 Event.SeatsAvailable--;

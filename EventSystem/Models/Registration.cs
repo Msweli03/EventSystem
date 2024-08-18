@@ -10,5 +10,7 @@ namespace EventSystem.Models
         public string UserId { get; set; }
         public IdentityUser User { get; set; } 
         public string ReferenceNumber { get; set; }
+        public string EmailAddress { get; set; }
+       
     }
 }

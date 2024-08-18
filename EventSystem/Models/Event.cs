@@ -8,6 +8,8 @@
         public int TotalSeats { get; set; }
         public int SeatsAvailable { get; set; }
         public ICollection<Registration> Registrations { get; set; }
+        public string Description { get; set; }
+
     }
 
 }
