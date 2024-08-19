@@ -5,6 +5,7 @@
 @inject ApplicationDbContext DbContext
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
+@attribute [Authorize(Roles = "Manager")]
 
 @* Updated to include pagination *@
 <style>

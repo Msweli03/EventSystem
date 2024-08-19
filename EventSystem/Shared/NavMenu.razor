@@ -1,24 +1,18 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">EventSystem</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <!-- Removed button element -->
     </div>
 </div>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+<div class="@NavMenuCssClass">
     <nav class="flex-column">
-   @*      <div class="nav-item px-3">
+        <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </div> *@
-
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="manage-events">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Manage Event
             </NavLink>
         </div>
         <div class="nav-item px-3">
@@ -26,16 +20,34 @@
                 <span class="oi oi-list-rich" aria-hidden="true"></span> Events
             </NavLink>
         </div>
+        @if (authenticationState.User.Identity.IsAuthenticated)
+        {
+            if (authenticationState.User.IsInRole("Manager"))
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="manage-events">
+                        <span class="oi oi-list-rich" aria-hidden="true"></span> Manage Event
+                    </NavLink>
+                </div>
+            }
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="events">
+                    <span class="oi oi-list-rich" aria-hidden="true"></span> Events
+                </NavLink>
+            </div>
+        }
     </nav>
 </div>
 
 @code {
     private bool collapseNavMenu = true;
+    private AuthenticationState authenticationState;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    private void ToggleNavMenu()
+    protected override async Task OnInitializedAsync()
     {
-        collapseNavMenu = !collapseNavMenu;
+        authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
     }
 }

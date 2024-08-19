@@ -1,9 +1,66 @@
 ﻿@page "/"
+@using Microsoft.AspNetCore.Components.Web
 
-<PageTitle>Index</PageTitle>
+@* Page Title *@
+<PageTitle>Welcome to EventSystem</PageTitle>
 
-<h1>Hello, world!</h1>
+@* Main Content *@
+<div class="container-fluid">
+    <div class="row justify-content-center align-items-center min-vh-100 text-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <h1 class="display-4">Welcome to EventSystem!</h1>
+                    <p class="lead">We are thrilled to have you here. Our platform helps you manage and track events seamlessly.</p>
 
-Welcome to your new app.
+                    <div class="mt-4">
+                        <a class="btn btn-primary btn-lg me-2" href="events">Explore Events</a>
+                        
+                    </div>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+                    <hr class="my-4">
+
+                    <h2 class="h4">Get Started</h2>
+                    <p>Discover the features of our system:</p>
+                    <ul class="list-unstyled">
+                        <li><i class="oi oi-calendar"></i> Manage and track your events.</li>
+                        <li><i class="oi oi-person"></i> Register and manage users.</li>
+                        <li><i class="oi oi-cog"></i> Customize settings and preferences.</li>
+                    </ul>
+
+                    <hr class="my-4">
+
+                    <div class="mt-4">
+                        <h3 class="h5">Feedback & Support</h3>
+                        <p>Your opinion matters to us. Please take a moment to provide feedback:</p>
+                        <a class="btn btn-info" href="https://docs.microsoft.com/aspnet/" target="_blank">Provide Feedback</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Styles *@
+<style>
+    .card {
+        border-radius: 1rem;
+    }
+
+    .btn-lg {
+        font-size: 1.25rem;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .list-unstyled li {
+        margin-bottom: 0.5rem;
+    }
+
+    .container-fluid {
+        padding: 2rem;
+    }
+
+    .min-vh-100 {
+        min-height: 100vh;
+    }
+</style>
