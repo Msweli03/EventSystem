@@ -3,6 +3,7 @@ using System;
 using EventSystem.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240819032021_AddedStartAndEndTime")]
+    partial class AddedStartAndEndTime
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.23");
@@ -28,14 +30,22 @@ namespace EventSystem.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<TimeSpan>("Duration")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("SeatsAvailable")
                         .HasColumnType("INTEGER");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("TotalSeats")
                         .HasColumnType("INTEGER");
@@ -48,37 +58,45 @@ namespace EventSystem.Migrations
                         new
                         {
                             Id = 1,
-                            Date = new DateTime(2024, 8, 29, 8, 47, 39, 569, DateTimeKind.Local).AddTicks(7070),
+                            Date = new DateTime(2024, 8, 29, 5, 20, 21, 589, DateTimeKind.Local).AddTicks(8163),
                             Description = "A festival for technology enthusiasts.",
+                            Duration = new TimeSpan(0, 4, 0, 0, 0),
                             Name = "Tech Festival",
                             SeatsAvailable = 100,
+                            StartTime = new TimeSpan(0, 10, 0, 0, 0),
                             TotalSeats = 100
                         },
                         new
                         {
                             Id = 2,
-                            Date = new DateTime(2024, 9, 3, 8, 47, 39, 569, DateTimeKind.Local).AddTicks(7088),
+                            Date = new DateTime(2024, 9, 3, 5, 20, 21, 589, DateTimeKind.Local).AddTicks(8180),
                             Description = "An informative webinar on latest tech trends.",
+                            Duration = new TimeSpan(0, 2, 0, 0, 0),
                             Name = "Webinar Event",
                             SeatsAvailable = 150,
+                            StartTime = new TimeSpan(0, 14, 0, 0, 0),
                             TotalSeats = 150
                         },
                         new
                         {
                             Id = 3,
-                            Date = new DateTime(2024, 9, 8, 8, 47, 39, 569, DateTimeKind.Local).AddTicks(7089),
+                            Date = new DateTime(2024, 9, 8, 5, 20, 21, 589, DateTimeKind.Local).AddTicks(8181),
                             Description = "A fun contest to see who can eat the most!",
+                            Duration = new TimeSpan(0, 3, 0, 0, 0),
                             Name = "Food Eating Contest",
                             SeatsAvailable = 200,
+                            StartTime = new TimeSpan(0, 12, 0, 0, 0),
                             TotalSeats = 200
                         },
                         new
                         {
                             Id = 4,
-                            Date = new DateTime(2024, 9, 13, 8, 47, 39, 569, DateTimeKind.Local).AddTicks(7090),
+                            Date = new DateTime(2024, 9, 13, 5, 20, 21, 589, DateTimeKind.Local).AddTicks(8182),
                             Description = "A coding event to showcase your skills.",
+                            Duration = new TimeSpan(0, 6, 0, 0, 0),
                             Name = "Let's Code Event",
                             SeatsAvailable = 250,
+                            StartTime = new TimeSpan(0, 9, 0, 0, 0),
                             TotalSeats = 250
                         });
                 });

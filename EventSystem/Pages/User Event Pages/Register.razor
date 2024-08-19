@@ -30,6 +30,16 @@
             border-color: #ac2925; /* Slightly darker red on hover */
         }
 
+    .btn-primary {
+        background-color: #5bc0de; /* Light blue color */
+        border-color: #46b8da; /* Slightly darker shade of blue */
+    }
+
+        .btn-primary:hover {
+            background-color: #31b0d5; /* Lighter blue on hover */
+            border-color: #269abc; /* Slightly darker shade of blue on hover */
+        }
+
     .card {
         border-color: #5bc0de; /* Light blue color */
     }
@@ -60,8 +70,10 @@
 
         @if (isRegistered)
         {
-            <p>You are already registered for this event.</p>
+            <p>Thank you for booking the seat.</p>
+            <p>Reference Number: @registration.ReferenceNumber</p>
             <button class="btn btn-danger" @onclick="CancelRegistration">Cancel Registration</button>
+            <button class="btn btn-primary" @onclick="NavigateToEventsPage">Back to Events</button>
         }
         else if (Event.SeatsAvailable > 0)
         {
@@ -89,6 +101,7 @@ else
     private Event Event { get; set; }
     private bool isRegistered;
     private string EmailAddress { get; set; }
+    private Registration registration;
 
     protected override async Task OnInitializedAsync()
     {
@@ -114,7 +127,10 @@ else
 
             if (userId != null)
             {
-                isRegistered = await DbContext.Registrations.AnyAsync(r => r.EventId == EventId && r.UserId == userId);
+                registration = await DbContext.Registrations
+                    .FirstOrDefaultAsync(r => r.EventId == EventId && r.UserId == userId);
+
+                isRegistered = registration != null;
             }
             else
             {
@@ -143,7 +159,7 @@ else
 
             if (Event.SeatsAvailable > 0 && !isRegistered && userId != null)
             {
-                var registration = new Registration
+                var newRegistration = new Registration
                     {
                         EventId = EventId,
                         UserId = userId,
@@ -152,10 +168,11 @@ else
                     };
 
                 Event.SeatsAvailable--;
-                DbContext.Registrations.Add(registration);
+                DbContext.Registrations.Add(newRegistration);
                 DbContext.Events.Update(Event);
                 await DbContext.SaveChangesAsync();
 
+                registration = newRegistration;
                 isRegistered = true;
                 Console.WriteLine("Successfully registered for the event.");
 
@@ -187,16 +204,17 @@ else
             var user = authState.User;
             var userId = UserManager.GetUserId(user);
 
-            var registration = await DbContext.Registrations
+            var regToCancel = await DbContext.Registrations
                 .FirstOrDefaultAsync(r => r.EventId == EventId && r.UserId == userId);
 
-            if (registration != null)
+            if (regToCancel != null)
             {
                 Event.SeatsAvailable++;
-                DbContext.Registrations.Remove(registration);
+                DbContext.Registrations.Remove(regToCancel);
                 DbContext.Events.Update(Event);
                 await DbContext.SaveChangesAsync();
 
+                registration = null;
                 isRegistered = false;
                 Console.WriteLine("Registration cancelled successfully.");
 
@@ -212,5 +230,10 @@ else
         {
             Console.WriteLine($"Error cancelling registration: {ex.Message}");
         }
+    }
+
+    private void NavigateToEventsPage()
+    {
+        Navigation.NavigateTo("/events");
     }
 }

@@ -24,19 +24,18 @@ public class Startup
         services.AddRazorPages();
         services.AddServerSideBlazor();
 
-        // Add Google authentication
-        services.AddAuthentication(options =>
-        {
-            options.DefaultScheme = IdentityConstants.ApplicationScheme;
-            options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-        })
-            //.AddGoogle(options =>
-            //{
-            //    options.ClientId = "32870900207-s7sn7flal7l520gq5qds4kped1hs2a80.apps.googleusercontent.com";
-            //    options.ClientSecret = "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";
-            //    options.CallbackPath = "/signin-google";
-            //})
-            ;
+        // Add Google authentication (commented out)
+        // services.AddAuthentication(options =>
+        // {
+        //     options.DefaultScheme = IdentityConstants.ApplicationScheme;
+        //     options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
+        // })
+        // .AddGoogle(options =>
+        // {
+        //     options.ClientId = "your-client-id";
+        //     options.ClientSecret = "your-client-secret";
+        //     options.CallbackPath = "/signin-google";
+        // });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
